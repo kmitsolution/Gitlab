@@ -53,6 +53,8 @@ To configure Git to use your GPG key, you need to retrieve your GPG key ID.
    uid                          Your Name <your_email@example.com>
    ssb   4096R/<SomeOtherKeyID> 2023-03-30
    ```
+   <img width="565" alt="image" src="https://github.com/user-attachments/assets/eb0586d0-8509-4745-97aa-eb782991a588" />
+
 3. Note the **key ID** (it’s the long string after `4096R/`), e.g., `ABCD1234EFGH5678`.
 
 ---
@@ -63,13 +65,23 @@ Now, you need to configure Git to use the GPG key for signing commits.
 1. Set your GPG key for signing commits by running the following command:
    ```bash
    git config --global user.signingkey <YourKeyID>
+   git config --global user.signingkey A58A33FB29A455A3
    ```
    Replace `<YourKeyID>` with the actual key ID you retrieved in Step 2.
 
 2. To ensure that all commits are signed by default, run the following command:
    ```bash
    git config --global commit.gpgSign true
+   git config tag.gpgsign true
    ```
+ 3. Add Path of gpg package
+  ```bash
+     where gpg
+    C:\Program Files (x86)\GnuPG\bin\gpg.exe
+
+  git config --global gpg.program "C:\Program Files (x86)\GnuPG\bin\gpg.exe"
+  git commit -m "Signed commit"
+  ```
 
 ---
 
