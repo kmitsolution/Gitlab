@@ -55,22 +55,22 @@ Imagine a software development company called "TechSolutions" that builds a mobi
 
 ### **Case Study:**
 
-#### **Case Study: AcmeTech — Using GitLab for DevOps Transformation**
+#### **Case Study: ABCTech — Using GitLab for DevOps Transformation**
 
 **Background:**
-AcmeTech is a mid-sized software development company that builds custom enterprise applications. The company used a variety of tools for version control, CI/CD, and project management. This fragmented approach led to inefficiencies, communication gaps, and difficulties in tracking development progress.
+ABCTech is a mid-sized software development company that builds custom enterprise applications. The company used a variety of tools for version control, CI/CD, and project management. This fragmented approach led to inefficiencies, communication gaps, and difficulties in tracking development progress.
 
 **Challenge:**
-AcmeTech's development process was disjointed. Developers used GitHub for code hosting, Jenkins for CI, Jira for issue tracking, and other tools for deployment. This created bottlenecks and slowed down the software delivery pipeline. They needed a unified platform to streamline their entire development process.
+ABCTech's development process was disjointed. Developers used GitHub for code hosting, Jenkins for CI, Jira for issue tracking, and other tools for deployment. This created bottlenecks and slowed down the software delivery pipeline. They needed a unified platform to streamline their entire development process.
 
 **Solution:**
-AcmeTech decided to migrate to GitLab to take advantage of its integrated DevOps features.
+ABCTech decided to migrate to GitLab to take advantage of its integrated DevOps features.
 
 1. **Centralized Repository and Version Control:**
-   GitLab became the single source of truth for all of AcmeTech's code. Developers could now collaborate in a centralized repository with features like branching, merging, and versioning, all managed through GitLab.
+   GitLab became the single source of truth for all of ABCTech's code. Developers could now collaborate in a centralized repository with features like branching, merging, and versioning, all managed through GitLab.
 
 2. **CI/CD Pipeline Setup:**
-   AcmeTech set up GitLab’s built-in CI/CD pipelines. They created a `.gitlab-ci.yml` file to define their build, test, and deployment stages. Every time code was pushed to the repository, GitLab automatically triggered the pipeline, which:
+   ABCTech set up GitLab’s built-in CI/CD pipelines. They created a `.gitlab-ci.yml` file to define their build, test, and deployment stages. Every time code was pushed to the repository, GitLab automatically triggered the pipeline, which:
    - Built the application
    - Ran unit tests
    - Deployed the application to staging
@@ -80,13 +80,13 @@ AcmeTech decided to migrate to GitLab to take advantage of its integrated DevOps
    GitLab’s issue tracking system allowed the team to track tasks, bugs, and features directly within the platform. They could create issues, assign them to team members, and track the progress on a Kanban-style board. This improved communication and kept everyone on the same page.
 
 4. **Security Features:**
-   AcmeTech integrated GitLab’s built-in security scanning tools, which automatically detected vulnerabilities in the codebase during the CI pipeline. This allowed them to fix issues early, reducing the risk of security breaches.
+   ABCTech integrated GitLab’s built-in security scanning tools, which automatically detected vulnerabilities in the codebase during the CI pipeline. This allowed them to fix issues early, reducing the risk of security breaches.
 
 5. **Monitoring and Performance Metrics:**
    GitLab’s Auto DevOps features helped AcmeTech deploy applications with monitoring and logging integrated. They could track application performance in real-time and fix issues faster.
 
 **Results:**
-- **Improved Efficiency:** With everything integrated into GitLab, AcmeTech saw a 30% improvement in development efficiency. The development and deployment process became more streamlined and faster.
+- **Improved Efficiency:** With everything integrated into GitLab, ABCTech saw a 30% improvement in development efficiency. The development and deployment process became more streamlined and faster.
 - **Better Collaboration:** Developers, product managers, and QA teams worked more closely with GitLab’s project management and collaboration tools. They no longer had to switch between multiple platforms.
 - **Faster Time to Market:** The automated CI/CD pipeline allowed AcmeTech to release new features and fixes faster. They reduced the time between writing code and delivering it to production by 40%.
 
