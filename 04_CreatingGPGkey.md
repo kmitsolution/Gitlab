@@ -145,6 +145,9 @@ To confirm that your commit is signed correctly, create a commit and push it to 
 
 3. In GitLab, navigate to your repository, and you should see that your commit is signed with your GPG key. GitLab will show a **verified** label next to your commit if the signature is valid.
 
+<img width="749" alt="image" src="https://github.com/user-attachments/assets/0a322bd9-18dc-42d1-a87e-a5e673e8db15" />
+
+
 ---
 
 ### **Important Notes**
