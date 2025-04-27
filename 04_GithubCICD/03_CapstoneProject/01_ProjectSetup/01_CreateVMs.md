@@ -1,15 +1,11 @@
-# 🧾 Capstone Project Infrastructure Plan
+# 🧾 Capstone Project Infrastructure Plan (with Software Setup)
 
 ## ☁️ Cloud Provider
 **Platform:** AWS (Amazon Web Services)  
-**Region:** As per your preference (e.g., `us-east-1` or `ap-south-1`)  
 **Key Pair:** Use an existing AWS Key Pair or create a new one  
 **Security Group:**  
-- **Name:** `allow-all-traffic`
-- **Rules:**  
-  - Inbound: All traffic (`0.0.0.0/0`, all ports, all protocols)  
-  - Outbound: All traffic (`0.0.0.0/0`, all ports, all protocols)  
-  - *Note:* This is acceptable for development/test environments but **not recommended for production**
+- **Inbound:** All traffic (protocol: ALL, port range: ALL, source: `0.0.0.0/0`)  
+- **Outbound:** All traffic (default)
 
 ---
 
@@ -17,49 +13,61 @@
 
 ### 1️⃣ GitLab Runner Server
 - **Purpose:**  
-  Hosts the GitLab self-hosted runner used to execute CI/CD pipelines for the Capstone project.
+  Runs GitLab self-hosted runner to execute CI/CD pipelines.
 - **AMI:** Ubuntu Server 24.04 LTS (64-bit)
 - **Instance Type:** `t2.medium` or `t3.medium`
-- **vCPU / RAM:** 2 vCPUs, 4 GB RAM
-- **Root Disk Size:** 15 GB
-- **Key Pair:** Use your specified key
+- **Disk Size:** 15 GB
+- **Key Pair:** Your chosen key
 - **Tags:**  
   - Name: `GitLab-Runner-VM`  
   - Role: `CI`
+- **Initial Software Installation:**
+  ```bash
+  sudo apt update
+  sudo apt install openjdk-21-jdk -y
+  sudo apt install maven -y
+  ```
 
 ---
 
 ### 2️⃣ Development Server
 - **Purpose:**  
-  Used for development tasks such as building the application, running Maven commands, and Docker builds.
+  Used for building, compiling code, and Docker image creation.
 - **AMI:** Ubuntu Server 24.04 LTS (64-bit)
 - **Instance Type:** `t2.medium` or `t3.medium`
-- **Root Disk Size:** 15 GB
-- **Key Pair:** Use your specified key
+- **Disk Size:** 15 GB
+- **Key Pair:** Your chosen key
 - **Tags:**  
   - Name: `Dev-Server-VM`  
   - Role: `Development`
+- **Initial Software Installation:**
+  ```bash
+  sudo apt update
+  sudo apt install openjdk-21-jdk -y
+  sudo apt install maven -y
+  ```
 
 ---
 
 ### 3️⃣ Test Server
 - **Purpose:**  
-  Serves as a secondary environment for tasks like code analysis, static testing (SonarQube, SAST), or other support services.
+  Used for static code analysis (SonarQube, SAST) and other testing tools.
 - **AMI:** Ubuntu Server 24.04 LTS (64-bit)
 - **Instance Type:** `t2.medium` or `t3.medium`
-- **Root Disk Size:** 15 GB
-- **Key Pair:** Use your specified key
+- **Disk Size:** 15 GB
+- **Key Pair:** Your chosen key
 - **Tags:**  
   - Name: `Test-Server-VM`  
   - Role: `Testing`
+- **Initial Software Installation:** *(to be installed as needed)*
 
 ---
 
-## 🔐 Notes
+## 🛠️ Software Installation Plan
 
-- Ensure **SSH access** using the correct key pair.
-- All machines should have **internet access** (via public IP or NAT) for updates and external dependencies.
-- You can later use **Ansible** to provision these VMs with necessary tools (Docker, Java, Maven, GitLab Runner, etc.)
+- Java (OpenJDK 21) and Maven installed upfront on Dev and CI servers.
+- Other tools like Docker, GitLab Runner, SonarQube, Ansible, Terraform, etc. will be installed step-by-step during project tasks.
 
 ---
 
+Would you like this in Markdown format for your README, or as a downloadable PDF?
