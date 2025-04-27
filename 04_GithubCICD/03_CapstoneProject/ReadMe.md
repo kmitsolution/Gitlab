@@ -1,9 +1,10 @@
 ## 📘 Capstone Project – DevOps Pipeline with GitLab CI/CD
 
 ### 🏗️ Project Setup
-1. **Create a Spring Boot Project using Spring Initializr**
-2. **Set Up Self-Hosted GitLab Runner**
-3. **Write a GitLab CI/CD Pipeline (.gitlab-ci.yml)**
+1. **Setup the Environment**
+2. **Create a Spring Boot Project using Spring Initializr**
+3. **Set Up Self-Hosted GitLab Runner**
+4. **Write a GitLab CI/CD Pipeline (.gitlab-ci.yml)**
 
 ---
 
