@@ -1,152 +1,140 @@
-**step-by-step hands-on guide** to set up and use the **GitLab Kubernetes Agent** (GKA) to deploy to your Kubernetes cluster using GitLab.
+Here's a **complete step-by-step guide** to connecting a Kubernetes cluster to GitLab using the **GitLab Kubernetes Agent** (`agentk`) with the setup you described, including:
+
+- Creating and registering the agent (`agent-new`)
+- Installing GitLab’s agent using **Helm**
+- Configuring the agent for your project
+- Writing a working `.gitlab-ci.yml` that deploys manifests to EKS via the agent
 
 ---
 
-## 🎯 Goal
-
-- Connect your Kubernetes cluster to GitLab using the **GitLab Kubernetes Agent**
-- Deploy a simple app using GitOps or CI/CD
+## 📘 Step-by-Step: GitLab Kubernetes Agent Setup (`agent-new`)
 
 ---
 
-## 🛠️ Prerequisites
+### 🧱 1. Prerequisites
 
-- A Kubernetes cluster (EKS, GKE, Minikube, etc.)
-- `kubectl` configured and connected to your cluster
-- A GitLab project
-- GitLab Premium (for full agent features), though some are available in Free tier
-
----
-
-## 🔁 STEP 1: Register the Agent in GitLab
-
-1. Go to your **GitLab Project** → **Infrastructure → Kubernetes clusters**
-2. Click **Connect a cluster (agent-based)**
-3. Click **Register a new agent**
-4. Give it a name, e.g., `my-agent`
-5. GitLab will show you:
-   - `agent_id`
-   - `registration_token`
-   - a `config.yaml` path (e.g., `.gitlab/agents/my-agent/config.yaml`)
+- You have a working **Kubernetes cluster** (e.g., AWS EKS)
+- Helm is installed locally
+- You are a **Maintainer** of the GitLab project
+- You have GitLab project: `myfirstgroup7711117/capstone`
 
 ---
 
-## 🐳 STEP 2: Install Agent in Kubernetes
+### 🚀 2. Create a GitLab Kubernetes Agent from GitLab UI
 
-1. Clone your GitLab project locally if needed:
+1. Go to **GitLab → Infrastructure → Kubernetes Clusters**
+2. Click **Connect a cluster (agent)**
+3. Set **Agent name** to `agent-new`
+4. GitLab will show the commands to install the agent on your cluster using Helm
+5. Note the **registration token** GitLab gives you (used in next step)
+
+---
+
+### 📦 3. Install GitLab Agent in EKS (via Helm)
+
+#### 🔧 Add GitLab Helm repo:
 
 ```bash
-git clone https://gitlab.com/yourname/yourproject.git
-cd yourproject
+helm repo add gitlab https://charts.gitlab.io
+helm repo update
 ```
 
-2. Create the `gitlab-agent` namespace:
+#### ⚙️ Install the agent (replace placeholders):
 
 ```bash
-kubectl create namespace gitlab-agent
+helm upgrade --install gitlab-agent gitlab/gitlab-agent \
+  --namespace gitlab-agent \
+  --create-namespace \
+  --set config.token=<REGISTRATION_TOKEN_FROM_UI> \
+  --set config.kasAddress=wss://kas.gitlab.com
 ```
 
-3. Create the secret using your **registration token**:
-
-```bash
-kubectl -n gitlab-agent create secret generic gitlab-agent-token \
-  --from-literal=token=PASTE_YOUR_REGISTRATION_TOKEN_HERE
-```
-
-4. Apply the official manifest:
-
-```bash
-kubectl apply -f https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/raw/main/manifests/agent.yaml
-```
-
-✅ Your agent is now installed in the cluster and securely connected to GitLab.
+> ✅ This installs the agent in your EKS cluster and registers it with GitLab.
 
 ---
 
-## 📁 STEP 3: Add GitOps Config to Your Repo
+### 📁 4. Create Agent Configuration in Your Repo
 
-Create the config file:
+Create a config file at: `.gitlab/agents/agent-new/config.yaml`
+
+#### 📄 `.gitlab/agents/agent-new/config.yaml`
 
 ```yaml
-# .gitlab/agents/my-agent/config.yaml
-gitops:
-  manifest_projects:
-    - id: your-namespace/your-project
-      default_namespace: default
+ci_access:
+  projects:
+    - id: myfirstgroup7711117/capstone
 ```
 
-> Replace `your-namespace/your-project` with your actual GitLab group/project path.
+> This allows CI jobs in your project to deploy using this agent.
 
-Commit and push it:
-
-```bash
-mkdir -p .gitlab/agents/my-agent
-nano .gitlab/agents/my-agent/config.yaml  # paste the config above
-git add .
-git commit -m "Add GitLab Agent config"
-git push
-```
+> 🔒 Commit and push this file to your default branch (e.g., `main` or `master`)
 
 ---
 
-## 📦 STEP 4: Add Kubernetes Manifests to Be Synced
+### ✅ 5. Confirm Agent is Connected
 
-Create a directory with your app’s deployment:
+After installing the Helm chart and pushing the config, go to:
+
+**GitLab → Infrastructure → Kubernetes Clusters → agent-new**
+
+You should see ✅ “Agent is connected.”
+
+---
+
+### 🛠 6. Configure `.gitlab-ci.yml` for Deployment
+
+#### 📄 `.gitlab-ci.yml`
 
 ```yaml
-# k8s/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: my-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-        - name: my-container
-          image: nginx
-          ports:
-            - containerPort: 80
+variables:
+  KUBE_CONTEXT: myfirstgroup7711117/capstone:agent-new
+
+stages:
+  - configure
+  - deploy
+
+aws-config-job:
+  stage: configure
+  tags:
+    - gitlab-proj
+  script:
+    - aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
+    - aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
+    - aws configure set default_region "${AWS_DEFAULT_REGION}"
+
+deploy:
+  stage: deploy
+  tags:
+    - gitlab-proj
+  needs:
+    - aws-config-job
+  script:
+    - echo "Using KUBE_CONTEXT: $KUBE_CONTEXT"
+    - kubectl config use-context "$KUBE_CONTEXT"
+    - kubectl apply -f deploy.yaml
 ```
 
-Push this into your GitLab project under `k8s/`.
+> 🔐 Set these variables in **GitLab → Settings → CI/CD → Variables**:
+> - `AWS_ACCESS_KEY_ID`
+> - `AWS_SECRET_ACCESS_KEY`
+> - `AWS_DEFAULT_REGION`
 
 ---
 
-## 📡 STEP 5: GitLab Agent Syncs the Manifests
+### 📈 7. Deploy Flow Summary
 
-Once pushed:
-
-- The **GitLab Kubernetes Agent** will detect the change
-- It will **pull and apply** the Kubernetes manifests from Git
-- You’ll see the app running in your cluster (use `kubectl get pods` to verify)
+1. `aws-config-job` sets up AWS credentials (useful if anything in the pipeline uses AWS)
+2. `deploy` job connects to the cluster using the GitLab Agent context
+3. `kubectl apply` applies your `deploy.yaml` to the cluster
 
 ---
 
-## 🔍 Validate Connection in GitLab
+### ✅ Verification
 
-Back in GitLab:
-
-- Go to **Infrastructure → Kubernetes clusters**
-- You should see your cluster is **connected** and synced
-- You can browse workloads and logs
+After the pipeline runs:
+- Run `kubectl get svc` to get the LoadBalancer external IP
+- Visit the app via the IP shown under `EXTERNAL-IP`
 
 ---
 
-## ✅ Summary
-
-| Step | What Happened |
-|------|---------------|
-| Register Agent | GitLab generates a token and config path |
-| Install Agent | Deployed agent into your cluster |
-| Add Config | GitLab knows where to pull manifests |
-| GitOps Works | GitLab auto-syncs Kubernetes manifests to your cluster |
-
----
+Would you like to add Helm-based deployments (`helm install`) instead of `kubectl apply`?
