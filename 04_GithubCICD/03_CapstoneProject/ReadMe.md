@@ -10,7 +10,7 @@
 
 ### 🧪 Code Quality and Analysis
 4. **Integrate SonarQube for Static Code Analysis**
-5. **Run SAST (Static Application Security Testing)**
+5. **Integrate with Maven Project**
 
 ---
 
