@@ -67,6 +67,7 @@ Settings > CI / CD > Variables
 stages:
   - build
   - dockerize
+  - push
 
 variables:
   IMAGE_NAME: myapp
@@ -74,6 +75,7 @@ variables:
   GITLAB_IMAGE: $DOCKER_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHORT_SHA
   DOCKERHUB_IMAGE: docker.io/ramansharma95/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA
 
+# Optional: define Maven cache for faster builds
 cache:
   paths:
     - .m2/repository/
@@ -81,11 +83,12 @@ cache:
 build:
   stage: build
   image: maven:3.9-eclipse-temurin-17-alpine
+
   script:
     - mvn clean package -DskipTests
   artifacts:
     paths:
-      - target/
+      - target/  
 
 docker_build_and_push:
   stage: dockerize
@@ -101,6 +104,7 @@ docker_build_and_push:
     - docker tag $GITLAB_IMAGE $DOCKERHUB_IMAGE
     - docker push $GITLAB_IMAGE
     - docker push $DOCKERHUB_IMAGE
+
 ```
 
 ---
