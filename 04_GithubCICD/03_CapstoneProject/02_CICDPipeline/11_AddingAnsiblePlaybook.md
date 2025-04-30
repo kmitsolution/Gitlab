@@ -1,4 +1,4 @@
- **step-by-step deployment**
+ **Step-by-Step deployment in Gitlab cicd using Ansible**
 
 - Uses **Ansible** on a **GitLab self-hosted runner**
 - Applies Kubernetes manifests (`deploy.yaml`, `service.yaml`) to an **AWS EKS cluster**
