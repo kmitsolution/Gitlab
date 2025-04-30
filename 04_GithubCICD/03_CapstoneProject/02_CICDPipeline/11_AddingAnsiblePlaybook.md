@@ -1,70 +1,157 @@
-Sure! Here's a **simple and clean example** of running an **Ansible playbook** in **GitLab CI/CD** — great for getting started.
+ **step-by-step deployment**
+
+- Uses **Ansible** on a **GitLab self-hosted runner**
+- Applies Kubernetes manifests (`deploy.yaml`, `service.yaml`) to an **AWS EKS cluster**
+- Uses `kubectl` (pre-installed) and assumes `kubeconfig` is already available
+- Deploys your Docker image to Kubernetes and exposes it via a **LoadBalancer service**
 
 ---
 
-## 🧾 1. **Ansible Playbook (`site.yml`)**
+## 📘 Step-by-Step GitLab CI/CD to Deploy to AWS EKS using Ansible
+
+---
+
+### ✅ 1. Prerequisites
+
+Make sure these are already set up:
+
+| Requirement                             | Details                                                                 |
+|-----------------------------------------|-------------------------------------------------------------------------|
+| **GitLab Self-Hosted Runner**           | Runner tagged `gitlab-proj` and registered to your project              |
+| **Runner Host Setup**                   | Has `Ansible`, `kubectl`, and access to EKS via `~/.kube/config`        |
+| **AWS EKS Cluster**                     | Exists and has appropriate IAM access (e.g., via instance role or keys) |
+| **GitLab Project Files**                | Includes `deploy.yaml`, `service.yaml`, and `app.yaml` Ansible playbook |
+
+---
+
+### ✅ 2. Kubernetes Manifests
+
+#### 📄 `deploy.yaml`
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-deploy
+  template:
+    metadata:
+      labels:
+        app: nginx-deploy
+    spec:
+      containers:
+      - name: webapp
+        image: ramansharma95/webapp
+        ports:
+        - containerPort: 80
+```
+
+#### 📄 `service.yaml`
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-deploy
+spec:
+  selector:
+    app: nginx-deploy
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+```
+
+---
+
+### ✅ 3. Ansible Playbook to Deploy
+
+#### 📄 `app.yaml`
 
 ```yaml
 ---
-- name: Simple ping test
-  hosts: all
+- name: Apply Kubernetes Manifests to EKS
+  hosts: localhost
+  connection: local
   tasks:
-    - name: Ping the target
-      ping:
+    - name: Apply deployment
+      command: kubectl apply -f deploy.yaml
+
+    - name: Apply service
+      command: kubectl apply -f service.yaml
 ```
+
+> This runs `kubectl apply` directly on the runner (which is assumed to already have access to your EKS cluster).
 
 ---
 
-## 📁 2. **Inventory File (`inventory.ini`)**
+### ✅ 4. GitLab CI Pipeline
 
-```ini
-[all]
-your.server.ip.here ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
-```
-
-Replace `your.server.ip.here` with your server’s IP (e.g., an EC2 instance).
-
----
-
-## 🔧 3. **`.gitlab-ci.yml`**
+#### 📄 `.gitlab-ci.yml`
 
 ```yaml
 stages:
-  - deploy
+  - provision
 
-ansible-deploy:
-  stage: deploy
-  image: python:3.11
-  before_script:
-    - apt update && apt install -y sshpass
-    - pip install ansible
-    - mkdir -p ~/.ssh
-    - echo "$ANSIBLE_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan -H your.server.ip.here >> ~/.ssh/known_hosts
+ansible_run:
+  stage: provision
+  tags:
+    - gitlab-proj  # Ensure the job runs on the self-hosted runner
   script:
-    - ansible-playbook -i inventory.ini site.yml
-  only:
-    - main
+    - echo "Running Ansible to deploy to EKS..."
+    - ansible --version
+    - ansible-playbook app.yaml
 ```
 
 ---
 
-## 🔐 4. **Set Up GitLab CI/CD Variable**
+### ✅ 5. GitLab Runner Host Configuration
 
-Go to **Settings → CI/CD → Variables**, and add:
+On the host machine where the self-hosted GitLab runner is installed:
 
-| Key                   | Value (Secret)                          |
-|------------------------|------------------------------------------|
-| `ANSIBLE_PRIVATE_KEY` | Paste your **SSH private key** here |
-
----
-
-## ✅ What It Does
-
-- Installs Ansible inside the GitLab CI job
-- Connects to your server using the SSH key
-- Runs a simple `ping` test via Ansible
+- Ensure `ansible` and `kubectl` are installed and in `PATH`
+- Ensure `kubectl` is configured to access EKS:
+  ```bash
+  kubectl config view
+  kubectl get nodes
+  ```
+- Ensure your IAM role/instance profile has EKS access (`eks:DescribeCluster`, etc.)
 
 ---
 
+### ✅ 6. Expected Outcome
+
+When you push to your GitLab repository:
+
+1. GitLab triggers the pipeline.
+2. The `ansible_run` job runs on the tagged runner.
+3. The `app.yaml` playbook applies `deploy.yaml` and `service.yaml` using `kubectl`.
+4. EKS provisions a **LoadBalancer** (usually an AWS Classic or NLB).
+5. You can get the external URL using:
+
+   ```bash
+   kubectl get svc nginx-deploy
+   ```
+
+   It will show an `EXTERNAL-IP` — your application will be available there.
+
+---
+
+### ✅ 7. Optional Enhancements
+
+- Add a `wait_for` check in Ansible to wait until LoadBalancer is assigned.
+- Use `kubectl rollout status` to wait for deployment readiness.
+- Add notifications (e.g., Slack) after deployment.
+- Clean up old versions with labels/selectors.
+
+---
+
+Would you like a version of this that dynamically extracts the LoadBalancer URL and prints it at the end of the pipeline?
